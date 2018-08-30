@@ -10,7 +10,7 @@ import static com.sun.btrace.BTraceUtils.*;
 
 // @BTrace annotation tells that this is a BTrace program
 @BTrace
-public class S3ListTracing {
+public class PrestoS3FileSystemTracing {
     private static AtomicLong putCounter = newAtomicLong(0);
     private static AtomicLong listCounter = newAtomicLong(0);
     private static AtomicLong listV2Counter = newAtomicLong(0);
@@ -22,9 +22,21 @@ public class S3ListTracing {
             clazz="com.amazonaws.services.s3.AmazonS3Client",
             method="putObject"
     )
-    public static void putObject(@ProbeClassName String cn,
+    public static void putObjectArgs(@ProbeClassName String cn,
                                  @ProbeMethodName String mn,
                                  AnyType[] args) {
+        println("dump putObject args");
+        BTraceUtils.printFields(args[0]);
+    }
+
+    @OnMethod(
+            clazz="com.amazonaws.services.s3.AmazonS3Client",
+            method="listObjectsV2"
+    )
+    public static void listObjectsV2Args(@ProbeClassName String cn,
+                                 @ProbeMethodName String mn,
+                                 AnyType[] args) {
+        println("dump listObjectsV2 args");
         BTraceUtils.printFields(args[0]);
     }
 
@@ -32,16 +44,16 @@ public class S3ListTracing {
             clazz="com.facebook.presto.s3fs.PrestoS3FileSystem",
             method="listPrefix"
     )
-    public static void listPrefix(@ProbeClassName String cn,
+    public static void listPrefixArgs(@ProbeClassName String cn,
                                   @ProbeMethodName String mn,
                                   AnyType[] args) {
+        println("dump listPrefix args");
         BTraceUtils.printFields(args[0]);
     }
 
     @OnMethod(
             clazz="com.amazonaws.services.s3.AmazonS3Client",
-            method="putObject",
-            location=@Location(value=Kind.LINE, line=1623)
+            method="putObject"
     )
     public static void trackPut() {
         addAndGet(putCounter, 1L);
@@ -49,8 +61,7 @@ public class S3ListTracing {
 
     @OnMethod(
             clazz="com.amazonaws.services.s3.AmazonS3Client",
-            method="listObjects",
-            location=@Location(value=Kind.LINE, line=829)
+            method="listObjects"
     )
     public static void trackList() {
         addAndGet(listCounter, 1L);
@@ -64,8 +75,7 @@ public class S3ListTracing {
 
     @OnMethod(
             clazz="com.amazonaws.services.s3.AmazonS3Client",
-            method="listObjectsV2",
-            location=@Location(value=Kind.LINE, line=865)
+            method="listObjectsV2"
     )
     public static void trackListV2() {
         addAndGet(listV2Counter, 1L);
@@ -79,8 +89,7 @@ public class S3ListTracing {
 
     @OnMethod(
             clazz="com.amazonaws.services.s3.AmazonS3Client",
-            method="initiateMultipartUpload",
-            location=@Location(value=Kind.LINE, line=3129)
+            method="initiateMultipartUpload"
     )
     public static void trackInitMultipartUpload() {
         addAndGet(initMultipartUploadCounter, 1L);
@@ -96,8 +105,7 @@ public class S3ListTracing {
 
     @OnMethod(
             clazz="com.amazonaws.services.s3.transfer.TransferManager",
-            method="copy",
-            location=@Location(value=Kind.LINE, line=1953)
+            method="copy"
     )
     public static void trackTransMgrCopy() {
         addAndGet(transMgrCopyCounter, 1L);
